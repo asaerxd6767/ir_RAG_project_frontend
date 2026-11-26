@@ -6,13 +6,13 @@ import 'state/ask_controller.dart';
 import 'theme/app_theme.dart';
 import 'ui/ask_screen.dart';
 
-// ignore: unused_import
-import 'package:flutter/foundation.dart';
-
 import 'state/changelog_controller.dart';
+import 'ui/friendly_error_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  ErrorWidget.builder = (FlutterErrorDetails details) => FriendlyErrorView(details: details);
 
   final config = ApiConfig.from(kDefaultApiBaseUrl);
   final controller = AskController(
