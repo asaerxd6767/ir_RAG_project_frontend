@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#2F5D9E"/>
+  <circle cx="1030" cy="110" r="200" fill="#0E9384" opacity="0.35"/>
+  <text x="80" y="290" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="92" font-weight="700">IR RAG Assistant</text>
+  <text x="82" y="380" fill="#D8E5FA" font-family="Arial, sans-serif" font-size="40">Grounded answers from your course corpus</text>
+</svg>
