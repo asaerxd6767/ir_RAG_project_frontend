@@ -78,6 +78,7 @@ class _AskScreenState extends State<AskScreen> {
               );
 
               return SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: EdgeInsets.symmetric(
                   horizontal: isWide ? 32 : 16,
                 ).copyWith(
