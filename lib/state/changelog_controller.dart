@@ -4,6 +4,16 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Map<String, List<String>> _changelog = <String, List<String>>{
+  '1.2.0': <String>[
+    'Brand-matched text selection and handles.',
+    'Bottom content stays clear of the system navigation bar.',
+    'A progress bar appears while the web app loads.',
+    'Shared web links now show a preview card.',
+    'Scrolling the question page dismisses the keyboard.',
+    'Settings shows the installed app version.',
+    'Friendly error view with copyable diagnostics.',
+    'What\'s new is shown on the first open after an update.',
+  ],
   '1.1.0': <String>[
     'Responsive two-pane layout and source cards.',
     'Configurable backend URL with a live health badge.',
