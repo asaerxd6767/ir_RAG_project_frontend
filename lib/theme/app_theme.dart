@@ -21,6 +21,11 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
+      textSelectionTheme: TextSelectionThemeData(
+        selectionColor: scheme.primary.withValues(alpha: isDark ? 0.40 : 0.30),
+        selectionHandleColor: scheme.primary,
+        cursorColor: scheme.primary,
+      ),
       scaffoldBackgroundColor: isDark ? scheme.surface : const Color(0xFFF4F6FB),
       cardTheme: CardThemeData(
         elevation: 0,
