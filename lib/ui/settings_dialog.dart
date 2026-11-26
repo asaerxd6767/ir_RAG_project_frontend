@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../core/api_config.dart';
 import '../state/ask_controller.dart';
@@ -17,11 +18,21 @@ class _SettingsDialogState extends State<SettingsDialog> {
   late final TextEditingController _urlController;
   String? _error;
   bool _saving = false;
+  String? _versionLabel;
 
   @override
   void initState() {
     super.initState();
     _urlController = TextEditingController(text: widget.controller.config.baseUrl);
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() {
+      _versionLabel = '${info.appName} ${info.version} (${info.buildNumber})';
+    });
   }
 
   @override
@@ -141,6 +152,21 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     ),
                   ],
                 ),
+                if (_versionLabel != null) ...[
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _versionLabel!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                        color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

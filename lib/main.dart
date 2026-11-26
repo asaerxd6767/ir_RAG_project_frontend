@@ -106,5 +106,3 @@ class _IrRagAppState extends State<IrRagApp> {
     );
   }
 }
-
-/*
