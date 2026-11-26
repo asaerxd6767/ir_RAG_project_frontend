@@ -40,6 +40,20 @@ flutter pub get
 flutter run
 ```
 
+> **Working from WSL:** this project lives at `~/Coding/flutter/ir_rag_project`
+> inside WSL. Run Flutter commands in a WSL terminal from that Linux path. Flutter's
+> Windows tool cannot use the `\\wsl.localhost\...` UNC path as its working
+> directory — running `flutter pub get` from PowerShell with that UNC path fails
+> with `UNC paths are not supported` / `Expected to find project root`. From
+> Windows PowerShell you can use the bundled helper instead:
+>
+> ```powershell
+> & '\\wsl.localhost\Ubuntu\home\zeke\Coding\flutter\ir_rag_project\scripts\flutter.bat' pub get
+> ```
+>
+> The helper maps the UNC path to a temporary drive with `pushd` before calling
+> Flutter. The same applies to `flutter run`, `flutter test` and `flutter build`.
+
 By default the app talks to `http://127.0.0.1:8000`. You can:
 
 - change it at runtime via the settings icon in the app bar (saved locally), or
