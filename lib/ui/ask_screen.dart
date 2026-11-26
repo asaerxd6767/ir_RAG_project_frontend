@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../state/ask_controller.dart';
 import 'settings_dialog.dart';
+import 'widgets/bottom_padding.dart';
 import 'widgets/health_badge.dart';
 import 'widgets/question_composer.dart';
 import 'widgets/result_panel.dart';
@@ -51,60 +52,60 @@ class _AskScreenState extends State<AskScreen> {
               const SizedBox(width: 4),
             ],
           ),
-          body: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 980;
-                final side = Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _Hero(compact: !isWide),
-                    const SizedBox(height: 18),
-                    _HealthRow(controller: controller),
-                    const SizedBox(height: 18),
-                    QuestionComposer(
-                      onSubmit: controller.ask,
-                      isLoading: controller.isLoading,
-                      recentQuestions: controller.recentQuestions,
-                    ),
-                    const SizedBox(height: 18),
-                    const _HowItWorks(),
-                  ],
-                );
-                final results = ResultPanel(
-                  controller: controller,
-                  onSuggestionTap: controller.ask,
-                  onRetry: controller.refreshHealth,
-                );
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 980;
+              final side = Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _Hero(compact: !isWide),
+                  const SizedBox(height: 18),
+                  _HealthRow(controller: controller),
+                  const SizedBox(height: 18),
+                  QuestionComposer(
+                    onSubmit: controller.ask,
+                    isLoading: controller.isLoading,
+                    recentQuestions: controller.recentQuestions,
+                  ),
+                  const SizedBox(height: 18),
+                  const _HowItWorks(),
+                ],
+              );
+              final results = ResultPanel(
+                controller: controller,
+                onSuggestionTap: controller.ask,
+                onRetry: controller.refreshHealth,
+              );
 
-                return SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isWide ? 32 : 16,
-                    vertical: isWide ? 24 : 12,
-                  ),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1240),
-                    child: isWide
-                        ? Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(flex: 2, child: side),
-                              const SizedBox(width: 28),
-                              Expanded(flex: 3, child: results),
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              side,
-                              const SizedBox(height: 20),
-                              results,
-                            ],
-                          ),
-                  ),
-                );
-              },
-            ),
+              return SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWide ? 32 : 16,
+                ).copyWith(
+                  top: isWide ? 24 : 12,
+                  bottom: BottomPadding.of(context, minimum: 24),
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1240),
+                  child: isWide
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 2, child: side),
+                            const SizedBox(width: 28),
+                            Expanded(flex: 3, child: results),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            side,
+                            const SizedBox(height: 20),
+                            results,
+                          ],
+                        ),
+                ),
+              );
+            },
           ),
         );
       },
