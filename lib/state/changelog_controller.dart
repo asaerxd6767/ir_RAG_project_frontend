@@ -4,6 +4,9 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Map<String, List<String>> _changelog = <String, List<String>>{
+  '1.2.1': <String>[
+    'Clearer Android connection help and HTTP support in release builds.',
+  ],
   '1.2.0': <String>[
     'Brand-matched text selection and handles.',
     'Bottom content stays clear of the system navigation bar.',

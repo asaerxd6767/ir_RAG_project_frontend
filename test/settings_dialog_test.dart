@@ -9,8 +9,8 @@ import 'package:ir_rag_project/theme/app_theme.dart';
 import 'package:ir_rag_project/ui/ask_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
-AskController _controller(MockClient client) {
-  final config = ApiConfig.from('http://127.0.0.1:8000');
+AskController _controller(MockClient client, {String url = 'http://127.0.0.1:8000'}) {
+  final config = ApiConfig.from(url);
   return AskController(
     config: config,
     client: RagApiClient(config: config, httpClient: client),
@@ -48,6 +48,24 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('127.0.0.1 points to the phone itself'), findsOneWidget);
+  });
+
+  testWidgets('settings warns that emulator address is wrong on a phone', (tester) async {
+    final controller = _controller(
+      MockClient((request) async => http.Response('{"status":"ok"}', 200)),
+      url: 'http://10.0.2.2:8000',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light().copyWith(platform: TargetPlatform.android),
+        home: AskScreen(controller: controller, onToggleTheme: () {}),
+      ),
+    );
+    await tester.tap(find.byTooltip('Backend settings'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('10.0.2.2 only works in the Android emulator'), findsOneWidget);
   });
 
   testWidgets('the ask button keeps its full-width layout', (tester) async {
