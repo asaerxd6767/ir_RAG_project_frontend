@@ -60,8 +60,16 @@ class ChangelogController extends ChangeNotifier {
   }
 
   List<String> _unseenChanges(String lastSeen, String current) {
-    final last = Version.parse(lastSeen);
-    final now = Version.parse(current);
+    // A stored value from an older/dev build may not be a valid version. Never
+    // let that turn into an unhandled error on app startup.
+    Version last;
+    Version now;
+    try {
+      last = Version.parse(lastSeen);
+      now = Version.parse(current);
+    } on FormatException {
+      return <String>[];
+    }
     final result = <String>[];
     for (final entry in _changelog.entries) {
       final version = Version.parse(entry.key);

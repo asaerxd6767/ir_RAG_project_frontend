@@ -38,6 +38,8 @@ class IrRagApp extends StatefulWidget {
 class _IrRagAppState extends State<IrRagApp> {
   ThemeMode _themeMode = ThemeMode.system;
   final ChangelogController _changelog = ChangelogController();
+  // The dialog must use a context below MaterialApp, where a Navigator exists.
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late final LibraryController _library;
   late final EvaluationController _evaluation;
   bool _changelogShown = false;
@@ -65,28 +67,44 @@ class _IrRagAppState extends State<IrRagApp> {
     final changes = _changelog.changes;
     if (changes == null || changes.isEmpty || _changelogShown) return;
     _changelogShown = true;
+    _presentChangelog(changes);
+  }
+
+  void _presentChangelog(List<String> changes) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      final navigatorContext = _navigatorKey.currentState?.context;
+      if (navigatorContext == null || !navigatorContext.mounted) {
+        // The first frame may finish after the async version check. Retry on
+        // the next frame instead of showing a dialog with the wrong context.
+        _presentChangelog(changes);
+        return;
+      }
       showDialog<void>(
-        context: context,
-        builder: (_) => AlertDialog(
+        context: navigatorContext,
+        builder: (dialogContext) => AlertDialog(
           title: const Text("What's new"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final change in changes)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Text('• $change'),
-                ),
-            ],
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final change in changes)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text('• $change'),
+                    ),
+                ],
+              ),
+            ),
           ),
           actions: [
             FilledButton(
               onPressed: () {
                 _changelog.dismiss();
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
               },
               child: const Text('Got it'),
             ),
@@ -99,6 +117,7 @@ class _IrRagAppState extends State<IrRagApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'IR RAG Assistant',
       theme: AppTheme.light(),
