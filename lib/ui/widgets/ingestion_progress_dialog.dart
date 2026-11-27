@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/example_questions.dart';
 import '../../data/models/library_models.dart';
 import '../../state/library_controller.dart';
 
@@ -14,10 +15,12 @@ class IngestionProgressDialog extends StatefulWidget {
     super.key,
     required this.controller,
     required this.url,
+    this.onExampleQuestion,
   });
 
   final LibraryController controller;
   final String url;
+  final void Function(String question)? onExampleQuestion;
 
   @override
   State<IngestionProgressDialog> createState() =>
@@ -132,11 +135,19 @@ class _IngestionProgressDialogState extends State<IngestionProgressDialog>
     return uri == null || uri.host.isEmpty ? widget.url : uri.host;
   }
 
-  String _readyTitle(IngestJob job) {
+  LibraryDocument? _readyDocument(IngestJob job) {
     for (final document in widget.controller.library?.documents ?? const []) {
-      if (document.id == job.documentId) return document.displayTitle;
+      if (document.id == job.documentId) return document;
     }
-    return 'Document';
+    return null;
+  }
+
+  String _readyTitle(IngestJob job) =>
+      _readyDocument(job)?.displayTitle ?? 'Document';
+
+  void _useExample(String question) {
+    Navigator.of(context).pop();
+    widget.onExampleQuestion?.call(question);
   }
 
   @override
@@ -151,6 +162,10 @@ class _IngestionProgressDialogState extends State<IngestionProgressDialog>
             ? _steps.length
             : _stageIndex(job?.stage ?? 'queued');
         final scheme = Theme.of(context).colorScheme;
+        final examples = ExampleQuestions.forText(
+          job == null ? 'Document' : _readyTitle(job),
+          widget.url,
+        );
 
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -179,6 +194,8 @@ class _IngestionProgressDialogState extends State<IngestionProgressDialog>
                           _ReadyPanel(
                             animation: _success,
                             title: job != null ? _readyTitle(job) : 'Document',
+                            examples: examples,
+                            onExampleSelected: _useExample,
                           )
                         else ...[
                           if (failed) ...[
@@ -452,10 +469,17 @@ class _StepTile extends StatelessWidget {
 }
 
 class _ReadyPanel extends StatelessWidget {
-  const _ReadyPanel({required this.animation, required this.title});
+  const _ReadyPanel({
+    required this.animation,
+    required this.title,
+    required this.examples,
+    required this.onExampleSelected,
+  });
 
   final Animation<double> animation;
   final String title;
+  final List<String> examples;
+  final void Function(String question) onExampleSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -486,6 +510,28 @@ class _ReadyPanel extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall
                   ?.copyWith(color: scheme.onSurfaceVariant, height: 1.5),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Try asking',
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: scheme.primary),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final example in examples)
+                  ActionChip(
+                    label: Text(
+                      example,
+                      style: const TextStyle(fontSize: 11.5),
+                    ),
+                    onPressed: () => onExampleSelected(example),
+                  ),
+              ],
             ),
           ],
         ),

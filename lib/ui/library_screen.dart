@@ -9,9 +9,14 @@ import 'widgets/ingestion_progress_dialog.dart';
 
 /// Corpus tab: add pages by URL, watch ingestion progress, manage documents.
 class LibraryScreen extends StatefulWidget {
-  const LibraryScreen({super.key, required this.controller});
+  const LibraryScreen({
+    super.key,
+    required this.controller,
+    this.onExampleQuestion,
+  });
 
   final LibraryController controller;
+  final void Function(String question)? onExampleQuestion;
 
   @override
   State<LibraryScreen> createState() => _LibraryScreenState();
@@ -34,8 +39,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) =>
-          IngestionProgressDialog(controller: widget.controller, url: url),
+      builder: (_) => IngestionProgressDialog(
+        controller: widget.controller,
+        url: url,
+        onExampleQuestion: widget.onExampleQuestion,
+      ),
     );
   }
 

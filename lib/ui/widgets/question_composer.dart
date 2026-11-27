@@ -1,10 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-const List<String> _suggestions = <String>[
-  'How does a polite crawler behave?',
-  'What is TF-IDF used for?',
-  'How are web pages deduplicated?',
-];
+import '../../core/example_questions.dart';
 
 class QuestionComposer extends StatefulWidget {
   const QuestionComposer({
@@ -12,11 +8,15 @@ class QuestionComposer extends StatefulWidget {
     required this.onSubmit,
     required this.isLoading,
     required this.recentQuestions,
+    this.suggestions = const <String>[],
+    this.pendingQuestion,
   });
 
   final Future<void> Function(String question) onSubmit;
   final bool isLoading;
   final List<String> recentQuestions;
+  final List<String> suggestions;
+  final String? pendingQuestion;
 
   @override
   State<QuestionComposer> createState() => _QuestionComposerState();
@@ -26,6 +26,24 @@ class _QuestionComposerState extends State<QuestionComposer> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
   bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.pendingQuestion != null) {
+      _controller.text = widget.pendingQuestion!;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant QuestionComposer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.pendingQuestion != null &&
+        widget.pendingQuestion != oldWidget.pendingQuestion) {
+      _controller.text = widget.pendingQuestion!;
+      _hasError = false;
+    }
+  }
 
   @override
   void dispose() {
@@ -56,7 +74,10 @@ class _QuestionComposerState extends State<QuestionComposer> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final ideas = <String>{..._suggestions, ...widget.recentQuestions}.toList();
+    final base = widget.suggestions.isEmpty
+        ? ExampleQuestions.python
+        : widget.suggestions;
+    final ideas = <String>{...base, ...widget.recentQuestions}.toList();
 
     return Card(
       child: Padding(
@@ -66,14 +87,18 @@ class _QuestionComposerState extends State<QuestionComposer> {
           children: [
             Row(
               children: [
-                Icon(Icons.question_answer_rounded, color: scheme.primary, size: 22),
+                Icon(
+                  Icons.question_answer_rounded,
+                  color: scheme.primary,
+                  size: 22,
+                ),
                 const SizedBox(width: 10),
                 Text(
                   'Ask a question',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                      ),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ],
             ),
@@ -91,7 +116,7 @@ class _QuestionComposerState extends State<QuestionComposer> {
                 }
               },
               decoration: InputDecoration(
-                hintText: 'e.g. How does a polite crawler behave?',
+                hintText: 'e.g. What is Python?',
                 errorText: _hasError ? 'Write a question before asking.' : null,
                 prefixIcon: const Padding(
                   padding: EdgeInsets.only(left: 4),
@@ -106,7 +131,10 @@ class _QuestionComposerState extends State<QuestionComposer> {
                   ? const SizedBox(
                       width: 17,
                       height: 17,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Icon(Icons.send_rounded, size: 18),
               label: Text(widget.isLoading ? 'Retrieving…' : 'Ask the corpus'),
@@ -114,9 +142,8 @@ class _QuestionComposerState extends State<QuestionComposer> {
             const SizedBox(height: 18),
             Text(
               'Try an example',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -126,7 +153,9 @@ class _QuestionComposerState extends State<QuestionComposer> {
                 for (final idea in ideas)
                   ActionChip(
                     label: Text(idea, style: const TextStyle(fontSize: 12)),
-                    onPressed: widget.isLoading ? null : () => _useSuggestion(idea),
+                    onPressed: widget.isLoading
+                        ? null
+                        : () => _useSuggestion(idea),
                   ),
               ],
             ),

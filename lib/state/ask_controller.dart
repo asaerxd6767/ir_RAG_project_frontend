@@ -28,6 +28,7 @@ class AskController extends ChangeNotifier {
   String? healthError;
   bool isCheckingHealth = false;
   final List<String> recentQuestions = <String>[];
+  String? pendingQuestion;
 
   ApiConfig get config => _config;
 
@@ -66,6 +67,14 @@ class AskController extends ChangeNotifier {
       isCheckingHealth = false;
       notifyListeners();
     }
+  }
+
+  /// Prefills the composer when the user picks an example from the Corpus tab.
+  void prefill(String question) {
+    final trimmed = question.trim();
+    if (trimmed.isEmpty) return;
+    pendingQuestion = trimmed;
+    notifyListeners();
   }
 
   Future<void> ask(String question) async {

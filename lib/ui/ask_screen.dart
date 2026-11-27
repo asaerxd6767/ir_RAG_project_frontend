@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../core/example_questions.dart';
 import '../state/ask_controller.dart';
+import '../state/library_controller.dart';
 import 'widgets/bottom_padding.dart';
 import 'widgets/health_badge.dart';
 import 'widgets/question_composer.dart';
@@ -9,9 +11,14 @@ import 'widgets/result_panel.dart';
 /// Content of the "Ask" tab. The surrounding [Scaffold] lives in MainShell so
 /// the app bar and bottom navigation stay put while switching tabs.
 class AskScreen extends StatefulWidget {
-  const AskScreen({super.key, required this.controller});
+  const AskScreen({
+    super.key,
+    required this.controller,
+    required this.libraryController,
+  });
 
   final AskController controller;
+  final LibraryController libraryController;
 
   @override
   State<AskScreen> createState() => _AskScreenState();
@@ -21,9 +28,15 @@ class _AskScreenState extends State<AskScreen> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: widget.controller,
+      listenable: Listenable.merge(<Listenable>[
+        widget.controller,
+        widget.libraryController,
+      ]),
       builder: (context, _) {
         final controller = widget.controller;
+        final suggestions = ExampleQuestions.forLibrary(
+          widget.libraryController.library,
+        );
         return LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 980;
@@ -38,6 +51,8 @@ class _AskScreenState extends State<AskScreen> {
                   onSubmit: controller.ask,
                   isLoading: controller.isLoading,
                   recentQuestions: controller.recentQuestions,
+                  suggestions: suggestions,
+                  pendingQuestion: controller.pendingQuestion,
                 ),
                 const SizedBox(height: 18),
                 const _HowItWorks(),

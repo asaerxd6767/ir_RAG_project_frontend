@@ -110,7 +110,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Document is ready'), findsNWidgets(2));
-    expect(find.textContaining('Example Tutorial'), findsOneWidget);
+    expect(
+      find.text(
+        '“Example Tutorial” is indexed and can now be asked about in the Ask tab.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Try asking'), findsOneWidget);
+    expect(find.text('What is Example Tutorial?'), findsOneWidget);
     expect(find.text('Crawling'), findsNothing);
     expect(find.text('Done'), findsOneWidget);
     expect(

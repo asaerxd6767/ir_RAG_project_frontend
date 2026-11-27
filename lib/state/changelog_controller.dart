@@ -4,6 +4,9 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Map<String, List<String>> _changelog = <String, List<String>>{
+  '1.3.3': <String>[
+    'Example questions now come from the indexed documents, with Python-specific suggestions and new examples after adding a URL.',
+  ],
   '1.3.2': <String>[
     'The ingestion walkthrough now stays open through crawling, extraction, preprocessing and indexing until the document is ready.',
   ],

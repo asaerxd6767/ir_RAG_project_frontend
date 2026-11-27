@@ -95,8 +95,17 @@ class _MainShellState extends State<MainShell> {
       body: IndexedStack(
         index: _index,
         children: [
-          AskScreen(controller: widget.askController),
-          LibraryScreen(controller: widget.libraryController),
+          AskScreen(
+            controller: widget.askController,
+            libraryController: widget.libraryController,
+          ),
+          LibraryScreen(
+            controller: widget.libraryController,
+            onExampleQuestion: (question) {
+              setState(() => _index = 0);
+              widget.askController.prefill(question);
+            },
+          ),
           EvaluationScreen(controller: widget.evaluationController),
         ],
       ),

@@ -39,7 +39,11 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
 ### Ask
 
 Ask a question and get a grounded answer with the source chunks used to create
-it. Refusals, loading, offline and error states are shown explicitly. The local
+it. The **Try an example** chips are drawn from the indexed documents: the
+default Python tutorial gets Python-specific questions, and newly added pages
+get questions derived from their title. Tapping an example after ingestion
+takes you straight to the Ask tab with the question ready to send.
+Refusals, loading, offline and error states are shown explicitly. The local
 GGUF model runs on the backend's CPU, so an answer can take 20–70 seconds; the
 client waits up to 180 seconds and shows progress while generating.
 
@@ -48,8 +52,8 @@ client waits up to 180 seconds and shows progress while generating.
 - Paste a page URL and tap **Add to corpus**.
 - An animated dialog follows the real backend job through queued → crawling →
   extraction → preprocessing → indexing. The dialog stays open for the whole
-  job so the animation is visible, then confirms the document is ready and lets
-  you close it.
+  job so the animation is visible, then confirms the document is ready, suggests
+  example questions for that page, and lets you close it.
 - See every added document with its title, URL, chunk count, word count, size,
   status and date.
 - Rebuild happens automatically; a document becomes question-ready when the job
