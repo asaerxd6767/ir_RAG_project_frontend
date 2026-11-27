@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const Map<String, List<String>> _changelog = <String, List<String>>{
   '1.3.2': <String>[
-    'The ingestion walkthrough now stays open for at least seven minutes and closes by itself.',
+    'The ingestion walkthrough now stays open through crawling, extraction, preprocessing and indexing until the document is ready.',
   ],
   '1.3.1': <String>[
     'Animated ingestion preview shows crawling, extraction, preprocessing and indexing, then confirms when the document is ready.',

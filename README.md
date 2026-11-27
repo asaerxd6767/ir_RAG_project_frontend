@@ -47,8 +47,9 @@ client waits up to 180 seconds and shows progress while generating.
 
 - Paste a page URL and tap **Add to corpus**.
 - An animated dialog follows the real backend job through queued → crawling →
-  extraction → preprocessing → indexing, then confirms the document is ready.
-  It stays open for at least seven minutes and closes automatically after that.
+  extraction → preprocessing → indexing. The dialog stays open for the whole
+  job so the animation is visible, then confirms the document is ready and lets
+  you close it.
 - See every added document with its title, URL, chunk count, word count, size,
   status and date.
 - Rebuild happens automatically; a document becomes question-ready when the job

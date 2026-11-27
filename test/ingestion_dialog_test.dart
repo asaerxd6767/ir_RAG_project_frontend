@@ -78,6 +78,11 @@ void main() {
     expect(find.text('Preprocessing'), findsOneWidget);
     expect(find.text('Indexing'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.text('Preparing document…'), findsOneWidget);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNull,
+    );
   });
 
   testWidgets('dialog replaces the pipeline with a ready message', (
@@ -107,6 +112,11 @@ void main() {
     expect(find.text('Document is ready'), findsNWidgets(2));
     expect(find.textContaining('Example Tutorial'), findsOneWidget);
     expect(find.text('Crawling'), findsNothing);
+    expect(find.text('Done'), findsOneWidget);
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNotNull,
+    );
   });
 
   testWidgets('dialog shows a clear failure state', (tester) async {
@@ -129,54 +139,10 @@ void main() {
     expect(find.text('extracting'), findsOneWidget);
     expect(find.text('Extraction'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsNothing);
-  });
-
-  testWidgets('dialog stays open for at least seven minutes', (tester) async {
-    final controller = LibraryController(
-      client: _client(MockClient((request) async => http.Response('{}', 200))),
+    expect(
+      tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+      isNotNull,
     );
-    controller.job = _job(
-      status: 'completed',
-      stage: 'completed',
-      progress: 1,
-      documentId: 'doc1',
-    );
-    addTearDown(controller.dispose);
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => TextButton(
-              onPressed: () {
-                showDialog<void>(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) => IngestionProgressDialog(
-                    controller: controller,
-                    url: 'https://example.com/tutorial',
-                  ),
-                );
-              },
-              child: const Text('Open'),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('Open'));
-    await tester.pump(const Duration(milliseconds: 100));
-
-    expect(find.byType(IngestionProgressDialog), findsOneWidget);
-    expect(find.textContaining('Please stay'), findsOneWidget);
-
-    await tester.pump(const Duration(minutes: 6, seconds: 59));
-    expect(find.text('Please stay 0:01'), findsOneWidget);
-    expect(find.byType(IngestionProgressDialog), findsOneWidget);
-
-    await tester.pump(const Duration(seconds: 1));
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(IngestionProgressDialog), findsNothing);
   });
 
   testWidgets('submitting a URL opens the animated dialog', (tester) async {
