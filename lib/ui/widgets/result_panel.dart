@@ -26,18 +26,18 @@ class ResultPanel extends StatelessWidget {
       child: switch (controller.state) {
         AskState.loading => const _LoadingView(key: ValueKey('loading')),
         AskState.success => _SuccessView(
-            key: const ValueKey('success'),
-            response: controller.response!,
-          ),
+          key: const ValueKey('success'),
+          response: controller.response!,
+        ),
         AskState.refusal => RefusalCard(
-            key: const ValueKey('refusal'),
-            onSuggestionTap: onSuggestionTap,
-          ),
+          key: const ValueKey('refusal'),
+          onSuggestionTap: onSuggestionTap,
+        ),
         AskState.error => _ErrorView(
-            key: const ValueKey('error'),
-            message: controller.errorMessage ?? 'Something went wrong.',
-            onRetry: onRetry,
-          ),
+          key: const ValueKey('error'),
+          message: controller.errorMessage ?? 'Something went wrong.',
+          onRetry: onRetry,
+        ),
         AskState.idle || _ => const _EmptyView(key: ValueKey('idle')),
       },
     );
@@ -62,12 +62,17 @@ class _EmptyView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.psychology_alt_outlined, size: 52, color: scheme.primary.withValues(alpha: 0.65)),
+          Icon(
+            Icons.psychology_alt_outlined,
+            size: 52,
+            color: scheme.primary.withValues(alpha: 0.65),
+          ),
           const SizedBox(height: 18),
           Text(
             'Answers grounded in your corpus',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
           ConstrainedBox(
@@ -75,10 +80,8 @@ class _EmptyView extends StatelessWidget {
             child: Text(
               'Ask a question to retrieve the most relevant course material and generate an answer with traceable sources.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                    height: 1.6,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: scheme.onSurfaceVariant, height: 1.6),
             ),
           ),
         ],
@@ -101,7 +104,8 @@ class _LoadingView extends StatelessWidget {
             const CircularProgressIndicator(),
             const SizedBox(height: 20),
             Text(
-              'Retrieving chunks and generating an answer…',
+              'Retrieving chunks and generating an answer…\n'
+              'The local model runs on CPU, so this can take about a minute.',
               textAlign: TextAlign.center,
               style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
             ),
@@ -152,14 +156,18 @@ class _ErrorView extends StatelessWidget {
                 Text(
                   'Could not get an answer',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: scheme.error,
-                      ),
+                    fontWeight: FontWeight.w700,
+                    color: scheme.error,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 14),
-            Text(message, style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6)),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(height: 1.6),
+            ),
             const SizedBox(height: 20),
             OutlinedButton.icon(
               onPressed: onRetry,

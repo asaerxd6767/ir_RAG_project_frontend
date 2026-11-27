@@ -39,7 +39,9 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
 ### Ask
 
 Ask a question and get a grounded answer with the source chunks used to create
-it. Refusals, loading, offline and error states are shown explicitly.
+it. Refusals, loading, offline and error states are shown explicitly. The local
+GGUF model runs on the backend's CPU, so an answer can take 20–70 seconds; the
+client waits up to 180 seconds and shows progress while generating.
 
 ### Corpus
 

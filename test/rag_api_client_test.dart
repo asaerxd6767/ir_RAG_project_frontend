@@ -217,4 +217,27 @@ void main() {
     expect(snapshot.answers.refusals, 1);
     expect(snapshot.documents.single.title, 'Python Tutorial');
   });
+
+  test('ask uses a longer timeout than fast endpoints', () async {
+    final mock = MockClient((request) async {
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      if (request.url.path == '/ask') {
+        return http.Response(
+          '{"answer":"A grounded answer.","sources":[]}',
+          200,
+          headers: {'content-type': 'application/json'},
+        );
+      }
+      return http.Response('{"status":"ok"}', 200);
+    });
+    final client = RagApiClient(
+      config: ApiConfig.from('http://127.0.0.1:8000'),
+      httpClient: mock,
+      timeout: const Duration(milliseconds: 5),
+      askTimeout: const Duration(seconds: 2),
+    );
+
+    expect((await client.ask('hello')).answer, 'A grounded answer.');
+    expect(() => client.getHealth(), throwsA(isA<ApiTimeoutException>()));
+  });
 }

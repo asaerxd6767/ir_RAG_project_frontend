@@ -17,11 +17,17 @@ class RagApiClient {
     required this.config,
     http.Client? httpClient,
     this.timeout = const Duration(seconds: 20),
+    this.askTimeout = const Duration(seconds: 180),
   }) : _http = httpClient ?? http.Client();
 
   ApiConfig config;
   final http.Client _http;
+
+  /// Timeout for fast endpoints such as /health and /documents.
   final Duration timeout;
+
+  /// Answer generation runs a local LLM on CPU and can take ~60 seconds.
+  final Duration askTimeout;
 
   /// Reuse the same client when the user changes the base URL so controllers
   /// that hold this instance keep talking to the new backend.
@@ -51,6 +57,7 @@ class RagApiClient {
         },
         body: jsonEncode(<String, String>{'question': trimmed}),
       ),
+      timeout: askTimeout,
     );
     return _decode(
       response,
@@ -127,12 +134,17 @@ class RagApiClient {
     );
   }
 
-  Future<http.Response> _send(Future<http.Response> Function() request) async {
+  Future<http.Response> _send(
+    Future<http.Response> Function() request, {
+    Duration? timeout,
+  }) async {
     try {
-      return await request().timeout(timeout);
+      return await request().timeout(timeout ?? this.timeout);
     } on TimeoutException {
       throw const ApiTimeoutException(
-        'The backend took too long to respond. Please try again.',
+        'The backend took too long to respond. Answer generation on a CPU '
+        'model can take about a minute — please try a shorter question or '
+        'add fewer documents to the corpus.',
       );
     } on Object catch (error) {
       throw ApiConnectionException(_connectionMessage(error));
