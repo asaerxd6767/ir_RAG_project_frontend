@@ -69,7 +69,10 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(48),
+          // A finite width is required: Size.fromHeight(48) has an infinite
+          // width, which crashes buttons placed in a Row (e.g. the settings
+          // dialog actions) because Row hands them unbounded width.
+          minimumSize: const Size(120, 48),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
         ),
