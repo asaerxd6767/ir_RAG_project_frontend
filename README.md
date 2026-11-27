@@ -46,8 +46,8 @@ client waits up to 180 seconds and shows progress while generating.
 ### Corpus
 
 - Paste a page URL and tap **Add to corpus**.
-- Watch the backend job progress: fetching → extracting → preprocessing →
-  indexing.
+- An animated dialog follows the real backend job through queued → crawling →
+  extraction → preprocessing → indexing, then confirms the document is ready.
 - See every added document with its title, URL, chunk count, word count, size,
   status and date.
 - Rebuild happens automatically; a document becomes question-ready when the job

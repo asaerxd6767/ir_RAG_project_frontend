@@ -4,6 +4,9 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Map<String, List<String>> _changelog = <String, List<String>>{
+  '1.3.1': <String>[
+    'Animated ingestion preview shows crawling, extraction, preprocessing and indexing, then confirms when the document is ready.',
+  ],
   '1.3.0': <String>[
     'New Corpus tab: add pages by URL, follow ingestion progress, and remove documents.',
     'New Evaluation dashboard with retrieval, answer and corpus-health metrics.',

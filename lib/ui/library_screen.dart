@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/models/library_models.dart';
 import '../state/library_controller.dart';
 import 'widgets/bottom_padding.dart';
+import 'widgets/ingestion_progress_dialog.dart';
 
 /// Corpus tab: add pages by URL, watch ingestion progress, manage documents.
 class LibraryScreen extends StatefulWidget {
@@ -26,9 +27,16 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   Future<void> _submit() async {
-    final url = _urlController.text;
+    final url = _urlController.text.trim();
     final ok = await widget.controller.ingest(url);
-    if (ok && mounted) _urlController.clear();
+    if (!ok || !mounted) return;
+    _urlController.clear();
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          IngestionProgressDialog(controller: widget.controller, url: url),
+    );
   }
 
   Future<void> _confirmDelete(LibraryDocument document) async {
