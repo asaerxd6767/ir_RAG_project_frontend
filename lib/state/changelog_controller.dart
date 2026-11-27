@@ -4,6 +4,9 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Map<String, List<String>> _changelog = <String, List<String>>{
+  '1.3.2': <String>[
+    'The ingestion walkthrough now stays open for at least seven minutes and closes by itself.',
+  ],
   '1.3.1': <String>[
     'Animated ingestion preview shows crawling, extraction, preprocessing and indexing, then confirms when the document is ready.',
   ],

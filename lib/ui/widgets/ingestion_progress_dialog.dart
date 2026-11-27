@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
@@ -10,6 +11,11 @@ import '../../state/library_controller.dart';
 /// The stage shown is driven by `GET /ingest/{job_id}`; the animation only
 /// decorates that state, so it never claims a step finished before it did.
 class IngestionProgressDialog extends StatefulWidget {
+  /// The visual walkthrough is intentionally slow so the full pipeline can be
+  /// followed. It never closes earlier than this, even if the job finishes
+  /// immediately.
+  static const Duration minimumDisplay = Duration(minutes: 7);
+
   const IngestionProgressDialog({
     super.key,
     required this.controller,
@@ -94,6 +100,12 @@ class _IngestionProgressDialogState extends State<IngestionProgressDialog>
     with TickerProviderStateMixin {
   late final AnimationController _pulse;
   late final AnimationController _success;
+  Timer? _minimumTimer;
+  int _elapsedSeconds = 0;
+  Duration _shown = Duration.zero;
+  bool _closeScheduled = false;
+
+  bool get _canDismiss => _shown >= IngestionProgressDialog.minimumDisplay;
 
   @override
   void initState() {
@@ -106,6 +118,16 @@ class _IngestionProgressDialogState extends State<IngestionProgressDialog>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
+    _minimumTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      if (_elapsedSeconds < IngestionProgressDialog.minimumDisplay.inSeconds) {
+        _elapsedSeconds++;
+      }
+      setState(() {
+        _shown = Duration(seconds: _elapsedSeconds);
+      });
+      _maybeClose();
+    });
     widget.controller.addListener(_onControllerChanged);
     _onControllerChanged();
   }
@@ -117,11 +139,27 @@ class _IngestionProgressDialogState extends State<IngestionProgressDialog>
         _success.status != AnimationStatus.completed) {
       _success.forward(from: 0);
     }
+    _maybeClose();
+  }
+
+  void _maybeClose() {
+    if (!mounted || _closeScheduled || !_canDismiss) return;
+    if (!(widget.controller.job?.isTerminal ?? false)) return;
+    _closeScheduled = true;
+    Navigator.of(context).pop();
+  }
+
+  String get _remainingLabel {
+    final seconds =
+        IngestionProgressDialog.minimumDisplay.inSeconds - _shown.inSeconds;
+    final clamped = seconds < 0 ? 0 : seconds;
+    return '${clamped ~/ 60}:${(clamped % 60).toString().padLeft(2, '0')}';
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_onControllerChanged);
+    _minimumTimer?.cancel();
     _pulse.dispose();
     _success.dispose();
     super.dispose();
@@ -227,11 +265,17 @@ class _IngestionProgressDialogState extends State<IngestionProgressDialog>
                         ],
                         const SizedBox(height: 18),
                         FilledButton(
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: _canDismiss
+                              ? () {
+                                  Navigator.of(context).pop();
+                                }
+                              : null,
                           child: Text(
-                            done || failed
-                                ? 'Done'
-                                : 'Keep working in background',
+                            _canDismiss
+                                ? (done || failed
+                                      ? 'Done'
+                                      : 'Keep working in background')
+                                : 'Please stay $_remainingLabel',
                           ),
                         ),
                       ],
