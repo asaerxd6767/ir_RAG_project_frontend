@@ -60,6 +60,12 @@ class _SettingsDialogState extends State<SettingsDialog> {
     }
   }
 
+  bool _isLoopbackOnAndroid(BuildContext context) {
+    if (Theme.of(context).platform != TargetPlatform.android) return false;
+    final host = Uri.tryParse(widget.controller.config.baseUrl)?.host.toLowerCase() ?? '';
+    return host == '127.0.0.1' || host == 'localhost' || host == '::1';
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -117,6 +123,26 @@ class _SettingsDialogState extends State<SettingsDialog> {
                   Text(_error!, style: TextStyle(color: scheme.error, fontSize: 13)),
                 ],
                 const SizedBox(height: 12),
+                if (_isLoopbackOnAndroid(context)) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: scheme.errorContainer.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'On Android, 127.0.0.1 points to the phone itself. Use your '
+                      'computer’s Wi-Fi IP (e.g. http://192.168.1.10:8000), or '
+                      'http://10.0.2.2:8000 in the emulator.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onErrorContainer,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -124,9 +150,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'Running in the Android emulator? Use http://10.0.2.2:8000 '
-                    'to reach the host machine. You can also set a build-time '
-                    'default with --dart-define=API_BASE_URL=...',
+                    'Start the backend on 0.0.0.0:8000 so other devices can reach '
+                    'it. You can also set a build-time default with '
+                    '--dart-define=API_BASE_URL=...',
                     style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant, height: 1.5),
                   ),
                 ),

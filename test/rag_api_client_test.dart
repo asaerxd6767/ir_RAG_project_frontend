@@ -50,6 +50,26 @@ void main() {
     expect((await client.getHealth()).isOk, isTrue);
   });
 
+  test('explains that loopback is the device on connection failure', () async {
+    final client = _clientFor(
+      MockClient((request) async => throw Exception('Connection refused')),
+    );
+
+    expect(
+      () => client.getHealth(),
+      throwsA(
+        isA<ApiConnectionException>().having(
+          (error) => error.message,
+          'message',
+          allOf(
+            contains('127.0.0.1 means the device itself'),
+            contains('Wi-Fi IP'),
+          ),
+        ),
+      ),
+    );
+  });
+
   test('maps a 404 to a helpful user-facing message', () async {
     final client = _clientFor(
       MockClient((request) async {

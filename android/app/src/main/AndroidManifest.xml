@@ -1,8 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The app talks to the Python backend over the network in every build,
+         including release builds (Flutter only adds this to debug/profile). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="ir_rag_project"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

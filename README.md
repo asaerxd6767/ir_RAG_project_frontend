@@ -66,6 +66,25 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
 Use `10.0.2.2` to reach the host machine from the Android emulator, or the host
 LAN IP for a physical device. Web/desktop builds can use `127.0.0.1`.
 
+### Connecting from a physical Android device
+
+`127.0.0.1` on the phone means **the phone itself**, so the health badge stays
+offline even when the backend is running on your computer. To connect:
+
+1. Put the phone and computer on the same Wi-Fi network.
+2. Find the computer's LAN IP (for example `192.168.1.10`). In WSL, `ip addr
+   show eth0`; on Windows, `ipconfig`. With WSL2 NAT, the address you need may be
+   the Windows host adapter address rather than the WSL `eth0` address.
+3. Start the backend so it listens outside localhost:
+   `python -m uvicorn src.api.server:app --host 0.0.0.0 --port 8000`.
+   If it runs inside WSL2, enable mirrored networking in `.wslconfig` or forward
+   port 8000 from Windows to WSL; also allow port 8000 through Windows Firewall.
+4. In the app, tap the settings icon and enter that IP, e.g.
+   `http://192.168.1.10:8000`, then **Save & test**.
+
+The Android manifest includes `INTERNET` permission and allows cleartext HTTP,
+so both debug and release builds can reach a plain-HTTP backend.
+
 ## Features
 
 - Responsive layout: two panes on wide screens, stacked on phones.

@@ -62,11 +62,22 @@ class RagApiClient {
         'The backend took too long to respond. Please try again.',
       );
     } on Object catch (error) {
-      throw ApiConnectionException(
-        'Cannot reach the backend at ${config.baseUrl}. '
-        'Check that the server is running. ($error)',
-      );
+      throw ApiConnectionException(_connectionMessage(error));
     }
+  }
+
+  String _connectionMessage(Object error) {
+    final uri = Uri.tryParse(config.baseUrl);
+    final host = uri?.host.toLowerCase() ?? '';
+    final isLoopback = host == '127.0.0.1' || host == 'localhost' || host == '::1';
+    final hint = isLoopback
+        ? ' On an Android device, 127.0.0.1 means the device itself, not your '
+            'computer. Use your computer’s Wi-Fi IP instead '
+            '(e.g. http://192.168.1.10:8000), or http://10.0.2.2:8000 on the emulator.'
+        : '';
+    return 'Cannot reach the backend at ${config.baseUrl}. '
+        'Check that the server is running and reachable from this device. '
+        '($error)$hint';
   }
 
   T _decode<T>(
