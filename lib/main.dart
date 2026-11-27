@@ -4,15 +4,18 @@ import 'core/api_config.dart';
 import 'data/services/rag_api_client.dart';
 import 'state/ask_controller.dart';
 import 'theme/app_theme.dart';
-import 'ui/ask_screen.dart';
 
 import 'state/changelog_controller.dart';
+import 'state/evaluation_controller.dart';
+import 'state/library_controller.dart';
 import 'ui/friendly_error_view.dart';
+import 'ui/main_shell.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  ErrorWidget.builder = (FlutterErrorDetails details) => FriendlyErrorView(details: details);
+  ErrorWidget.builder = (FlutterErrorDetails details) =>
+      FriendlyErrorView(details: details);
 
   final config = ApiConfig.from(kDefaultApiBaseUrl);
   final controller = AskController(
@@ -35,11 +38,15 @@ class IrRagApp extends StatefulWidget {
 class _IrRagAppState extends State<IrRagApp> {
   ThemeMode _themeMode = ThemeMode.system;
   final ChangelogController _changelog = ChangelogController();
+  late final LibraryController _library;
+  late final EvaluationController _evaluation;
   bool _changelogShown = false;
 
   @override
   void initState() {
     super.initState();
+    _library = LibraryController(client: widget.controller.client);
+    _evaluation = EvaluationController(client: widget.controller.client);
     widget.controller.initialize();
     _changelog.addListener(_showChangelogIfNeeded);
     _changelog.initialize();
@@ -49,6 +56,8 @@ class _IrRagAppState extends State<IrRagApp> {
   @override
   void dispose() {
     _changelog.removeListener(_showChangelogIfNeeded);
+    _library.dispose();
+    _evaluation.dispose();
     super.dispose();
   }
 
@@ -95,11 +104,15 @@ class _IrRagAppState extends State<IrRagApp> {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: _themeMode,
-      home: AskScreen(
-        controller: widget.controller,
+      home: MainShell(
+        askController: widget.controller,
+        libraryController: _library,
+        evaluationController: _evaluation,
         onToggleTheme: () {
           setState(() {
-            _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+            _themeMode = _themeMode == ThemeMode.dark
+                ? ThemeMode.light
+                : ThemeMode.dark;
           });
         },
       ),

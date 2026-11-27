@@ -18,7 +18,7 @@ class AskController extends ChangeNotifier {
   }) : _settings = settings ?? SettingsStore();
 
   ApiConfig _config;
-  RagApiClient _client;
+  final RagApiClient _client;
   final SettingsStore _settings;
 
   AskState state = AskState.idle;
@@ -30,6 +30,11 @@ class AskController extends ChangeNotifier {
   final List<String> recentQuestions = <String>[];
 
   ApiConfig get config => _config;
+
+  /// Shared by the corpus and evaluation controllers so a URL change applies
+  /// to every tab without rebuilding the app.
+  RagApiClient get client => _client;
+
   bool get isLoading => state == AskState.loading;
   bool get isBackendHealthy => health?.isOk ?? false;
 
@@ -92,9 +97,8 @@ class AskController extends ChangeNotifier {
 
   Future<void> applyBaseUrl(String rawUrl, {bool checkHealth = true}) async {
     final config = ApiConfig.from(rawUrl);
-    _client.dispose();
+    _client.reconfigure(config);
     _config = config;
-    _client = RagApiClient(config: config);
     await _settings.saveBaseUrl(config.baseUrl);
     if (checkHealth) {
       await refreshHealth();

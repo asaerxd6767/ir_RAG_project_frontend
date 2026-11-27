@@ -22,9 +22,8 @@ class SourcesSection extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               'Sources',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(width: 8),
             Container(
@@ -35,7 +34,11 @@ class SourcesSection extends StatelessWidget {
               ),
               child: Text(
                 '${sources.length}',
-                style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700, fontSize: 12),
+                style: TextStyle(
+                  color: scheme.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
               ),
             ),
           ],
@@ -51,7 +54,10 @@ class SourcesSection extends StatelessWidget {
               runSpacing: 12,
               children: [
                 for (final source in sources)
-                  SizedBox(width: cardWidth, child: SourceCard(source: source)),
+                  SizedBox(
+                    width: cardWidth,
+                    child: SourceCard(source: source),
+                  ),
               ],
             );
           },
@@ -69,7 +75,9 @@ class SourceCard extends StatelessWidget {
   Future<void> _open() async {
     final uri = Uri.tryParse(source.url);
     if (uri == null || !uri.hasScheme) return;
-    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
@@ -93,11 +101,17 @@ class SourceCard extends StatelessWidget {
                     source.displayTitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: scheme.secondary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(999),

@@ -1,15 +1,83 @@
 # IR RAG Assistant (Flutter frontend)
 
 A responsive Flutter client for the IR-RAG Python backend. It asks grounded
-questions, shows the generated answer, lists the source chunks behind it, and
-handles refusals and backend errors explicitly.
+questions, manages the documents that can be questioned, shows an evaluation
+dashboard, and handles refusals and backend errors explicitly.
+
+## Run the app
+
+```bash
+cd ~/Coding/flutter/ir_rag_project
+flutter pub get
+flutter run
+```
+
+Start the backend first (see the backend `README.md`), then open the app. The
+default backend URL is `http://127.0.0.1:8000`; change it at any time with the
+settings icon in the app bar. The value is saved on the device.
+
+> **Working from WSL:** this project lives at `~/Coding/flutter/ir_rag_project`
+> inside WSL. Run Flutter commands in a WSL terminal from that Linux path. Flutter's
+> Windows tool cannot use the `\\wsl.localhost\...` UNC path as its working
+> directory. From Windows PowerShell use the bundled helper instead:
+>
+> ```powershell
+> & '\\wsl.localhost\Ubuntu\home\zeke\Coding\flutter\ir_rag_project\scripts\flutter.bat' pub get
+> ```
+>
+> The helper maps the UNC path to a temporary drive with `pushd` before calling
+> Flutter. The same applies to `flutter run`, `flutter test` and `flutter build`.
+
+You can also set a build-time default:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
+```
+
+## Tabs
+
+### Ask
+
+Ask a question and get a grounded answer with the source chunks used to create
+it. Refusals, loading, offline and error states are shown explicitly.
+
+### Corpus
+
+- Paste a page URL and tap **Add to corpus**.
+- Watch the backend job progress: fetching → extracting → preprocessing →
+  indexing.
+- See every added document with its title, URL, chunk count, word count, size,
+  status and date.
+- Rebuild happens automatically; a document becomes question-ready when the job
+  completes.
+- Remove a document with **Remove**. The backend deletes its files and rebuilds
+  the search index.
+
+### Evaluation
+
+A live dashboard with:
+
+- corpus totals (documents, chunks, words),
+- retrieval quality (hit@1, hit@k, MRR, nDCG@k, mean top score, latency),
+- answer telemetry (questions, answered, refusals, grounded rate),
+- corpus health (coverage, chunks per document, orphan chunks, index freshness),
+- a per-document content distribution chart.
 
 ## Backend contract
 
 The app expects an HTTP server exposing:
 
 - `GET /health` → `{"status": "ok"}`
-- `POST /ask` with `{"question": "..."}` →
+- `POST /ask` with `{"question": "..."}` → answer payload
+- `GET /documents` → document library and counts
+- `POST /ingest` with `{"url": "..."}` → ingestion job
+- `GET /ingest/{job_id}` → job progress
+- `DELETE /documents/{id}` → remove a document and rebuild the index
+- `GET /evaluation` → dashboard metrics
+
+Exact shapes are documented in the backend `docs/frontend_integration.md`.
+
+`POST /ask` returns:
 
 ```json
 {
@@ -33,100 +101,62 @@ dedicated refusal state instead of inventing an answer.
 `title`, `section`, `chunk_id` and `score` are optional in practice: the client
 parses them defensively and falls back to sensible labels.
 
-## Run
+## Connecting from a physical Android device
 
-```bash
-flutter pub get
-flutter run
-```
+`127.0.0.1` on the phone means **the phone itself**, and `10.0.2.2` only works in
+the emulator. Pick one of these two paths:
 
-> **Working from WSL:** this project lives at `~/Coding/flutter/ir_rag_project`
-> inside WSL. Run Flutter commands in a WSL terminal from that Linux path. Flutter's
-> Windows tool cannot use the `\\wsl.localhost\...` UNC path as its working
-> directory — running `flutter pub get` from PowerShell with that UNC path fails
-> with `UNC paths are not supported` / `Expected to find project root`. From
-> Windows PowerShell you can use the bundled helper instead:
->
-> ```powershell
-> & '\\wsl.localhost\Ubuntu\home\zeke\Coding\flutter\ir_rag_project\scripts\flutter.bat' pub get
-> ```
->
-> The helper maps the UNC path to a temporary drive with `pushd` before calling
-> Flutter. The same applies to `flutter run`, `flutter test` and `flutter build`.
-
-By default the app talks to `http://127.0.0.1:8000`. You can:
-
-- change it at runtime via the settings icon in the app bar (saved locally), or
-- provide a build-time default:
-
-```bash
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
-```
-
-Use `10.0.2.2` to reach the host machine from the Android emulator, or the host
-LAN IP for a physical device. Web/desktop builds can use `127.0.0.1`.
-
-### Connecting from a physical Android device
-
-`127.0.0.1` on the phone means **the phone itself**, and `10.0.2.2` only works
-in the emulator. That is why the badge stays offline even when the backend is
-running. Pick one of these two paths:
-
-**Option A — USB (no network or firewall changes, recommended while developing):**
+**Option A — USB (recommended while developing):**
 
 ```bash
 adb reverse tcp:8000 tcp:8000
 ```
 
-Keep the app URL at `http://127.0.0.1:8000` and restart the app. The phone's
-localhost is tunnelled to your computer over USB. Re-run the command after
-reconnecting the cable or rebooting.
+Keep the app URL at `http://127.0.0.1:8000` and restart the app. Re-run the
+command after reconnecting the cable or rebooting.
 
 **Option B — Wi-Fi:**
 
 1. Put the phone and computer on the same Wi-Fi network.
-2. Find the computer's LAN IP (for example `192.168.0.178`). In WSL, `ip addr`;
-   on Windows, `ipconfig`. With WSL2 the address you need is usually the Windows
-   Wi-Fi adapter address. Mirrored networking (`networkingMode=mirrored`) shares it.
-3. Start the backend on all interfaces:
-   `python -m uvicorn src.api.server:app --host 0.0.0.0 --port 8000`.
+2. Find the computer's LAN IP (for example `192.168.0.178`).
+3. Start the backend with `--host 0.0.0.0`.
 4. Allow inbound TCP port 8000 through Windows Firewall **as Administrator**:
 
    ```powershell
    New-NetFirewallRule -DisplayName "IR-RAG backend 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private,Public
    ```
 
-5. In the app settings, enter `http://192.168.0.178:8000` (your IP) and tap
-   **Save & test**.
+5. In the app settings, enter `http://192.168.0.178:8000` and tap **Save & test**.
 
 The Android manifest includes `INTERNET` permission and allows cleartext HTTP,
 so both debug and release builds can reach a plain-HTTP backend.
 
 ## Features
 
+- Three top-level tabs: Ask, Corpus and Evaluation.
 - Responsive layout: two panes on wide screens, stacked on phones.
 - Question input with example and recent-question shortcuts.
 - Loading, answer, refusal and error/offline states.
 - Source cards with title, section, relevance score, chunk id and a link opener.
+- URL ingestion with live job progress and document deletion.
+- Professional evaluation dashboard with useful retrieval/answer/health metrics.
 - Backend health badge with manual refresh.
-- Light/dark theme following the system setting, with a manual toggle.
-- Configurable, persisted backend base URL.
+- Light/dark theme with a manual toggle.
+- Configurable, persisted backend base URL shared by every tab.
 
 ## Tests
 
 ```bash
-flutter test
 flutter analyze
+flutter test
 ```
 
-Tests cover URL validation, payload parsing/refusal detection, and the HTTP
-client's request/response/error mapping using a mock client.
+Tests cover URL validation, payload parsing/refusal detection, the new library
+and evaluation endpoints, settings regressions, and the HTTP client's
+request/response/error mapping using a mock client.
 
 ## Backend status
 
-As of the latest review, the Python repository at `~/Coding/python/IR-RAG_Project`
-has the IR pipeline but **does not yet implement the HTTP API**: `src/api/` is
-missing, `POST /ask` / `GET /health` have no server, and `src/rag/answer.py`,
-`src/rag/prompt_builder.py` and `app.py ask` are still stubs. Until those exist,
-this app will show "Backend offline" / "Endpoint not found" states rather than
-fake data.
+The Python repository at `~/Coding/python/IR-RAG_Project` implements the full
+pipeline and the HTTP API used by this app. Backend changes are tracked in that
+repository's `README.md` and `docs/frontend_integration.md`.

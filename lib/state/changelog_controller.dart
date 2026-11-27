@@ -4,6 +4,11 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const Map<String, List<String>> _changelog = <String, List<String>>{
+  '1.3.0': <String>[
+    'New Corpus tab: add pages by URL, follow ingestion progress, and remove documents.',
+    'New Evaluation dashboard with retrieval, answer and corpus-health metrics.',
+    'Ask, Corpus and Evaluation now share one backend URL setting.',
+  ],
   '1.2.1': <String>[
     'Clearer Android connection help and HTTP support in release builds.',
   ],
@@ -21,9 +26,7 @@ const Map<String, List<String>> _changelog = <String, List<String>>{
     'Responsive two-pane layout and source cards.',
     'Configurable backend URL with a live health badge.',
   ],
-  '1.0.0': <String>[
-    'First grounded IR-RAG answer screen.',
-  ],
+  '1.0.0': <String>['First grounded IR-RAG answer screen.'],
 };
 
 class ChangelogController extends ChangeNotifier {

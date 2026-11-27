@@ -88,4 +88,133 @@ void main() {
       ),
     );
   });
+
+  test('GET /documents parses the corpus library', () async {
+    final client = _clientFor(
+      MockClient((request) async {
+        expect(request.url.path, '/documents');
+        return http.Response(
+          jsonEncode({
+            'documents': [
+              {
+                'id': 'd1',
+                'url': 'https://example.com/python-tutorial',
+                'title': 'Python Tutorial',
+                'chunk_count': 12,
+                'word_count': 1800,
+                'size_bytes': 24000,
+                'created_at': '2026-11-27T00:00:00Z',
+                'status': 'ready',
+              },
+            ],
+            'counts': {
+              'documents': 1,
+              'chunks': 12,
+              'words': 1800,
+              'ready_documents': 1,
+            },
+          }),
+          200,
+        );
+      }),
+    );
+
+    final library = await client.getLibrary();
+    expect(library.documents.single.title, 'Python Tutorial');
+    expect(library.counts.chunks, 12);
+  });
+
+  test('ingestion endpoints parse job progress', () async {
+    final client = _clientFor(
+      MockClient((request) async {
+        if (request.method == 'POST') {
+          expect(request.url.path, '/ingest');
+          expect(jsonDecode(request.body), {
+            'url': 'https://example.com/tutorial',
+          });
+          return http.Response(
+            jsonEncode({
+              'job_id': 'job1',
+              'url': 'https://example.com/tutorial',
+              'status': 'running',
+              'stage': 'crawling',
+              'progress': 0.2,
+              'message': 'Fetching the page',
+            }),
+            202,
+          );
+        }
+        expect(request.url.path, '/ingest/job1');
+        return http.Response(
+          jsonEncode({
+            'job_id': 'job1',
+            'url': 'https://example.com/tutorial',
+            'status': 'completed',
+            'stage': 'completed',
+            'progress': 1,
+            'message': 'Indexed 3 chunks',
+            'document_id': 'd1',
+          }),
+          200,
+        );
+      }),
+    );
+
+    final started = await client.startIngest('https://example.com/tutorial');
+    expect(started.progress, 0.2);
+    final finished = await client.getIngestJob('job1');
+    expect(finished.isDone, isTrue);
+    expect(finished.documentId, 'd1');
+  });
+
+  test('DELETE /documents/{id} sends a delete request', () async {
+    final client = _clientFor(
+      MockClient((request) async {
+        expect(request.method, 'DELETE');
+        expect(request.url.path, '/documents/d1');
+        return http.Response('{"deleted_id":"d1"}', 200);
+      }),
+    );
+
+    await client.deleteDocument('d1');
+  });
+
+  test('GET /evaluation parses dashboard metrics', () async {
+    final client = _clientFor(
+      MockClient((request) async {
+        expect(request.url.path, '/evaluation');
+        return http.Response(
+          jsonEncode({
+            'generated_at': '2026-11-27T00:00:00Z',
+            'corpus': {
+              'documents': 1,
+              'chunks': 4,
+              'words': 500,
+              'index_ready': true,
+              'model_ready': true,
+            },
+            'retrieval': {
+              'queries': 2,
+              'hit_at_1': 1.0,
+              'hit_at_k': 1.0,
+              'mrr': 1.0,
+              'ndcg_at_k': 1.0,
+            },
+            'answers': {'total': 3, 'answered': 2, 'refusals': 1},
+            'quality': {'coverage': 1.0, 'index_freshness': 'fresh'},
+            'documents': [
+              {'title': 'Python Tutorial', 'chunks': 4, 'words': 500},
+            ],
+          }),
+          200,
+        );
+      }),
+    );
+
+    final snapshot = await client.getEvaluation();
+    expect(snapshot.corpus.documents, 1);
+    expect(snapshot.retrieval.hitAtOne, 1.0);
+    expect(snapshot.answers.refusals, 1);
+    expect(snapshot.documents.single.title, 'Python Tutorial');
+  });
 }
